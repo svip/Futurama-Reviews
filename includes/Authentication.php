@@ -135,4 +135,4 @@ class Authentication {
 
 }
 
-$auth = new auth();
+$auth = null;
