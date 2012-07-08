@@ -27,17 +27,15 @@ class PageEditreview extends Page {
 	}
 	
 	private function handleEditReview() {
-		global $DB, $auth;
-		
 		$id = $this->id;
 		
-		$DB->query("SELECT * FROM `reviews` WHERE `id` = $id");
+		$i = gfDBQuery("SELECT * FROM `reviews` WHERE `id` = $id");
 		
-		$result = $DB->get_result();
+		$result = gfDBGetResult($i);
 		
 		$episodeid = $result['episodeid'];
 		
-		if ( $result['userid'] != $auth->get_userdata('userid') ) {
+		if ( $result['userid'] != gfGetAuth()->get_userdata('userid') ) {
 			header('Location: /');
 			return;
 		}
@@ -63,16 +61,16 @@ class PageEditreview extends Page {
 		if ( count($this->postErrors)>0 )
 			return;
 		
-		$userid = $auth->get_userdata('userid');
+		$userid = gfGetAuth()->get_userdata('userid');
 		
-		$DB->query("UPDATE `reviews` 
+		gfDBQuery("UPDATE `reviews` 
 				SET `content` = '$content', `rating` = $overallrating
 				WHERE `id` = $id");
 		
 		foreach ( $ratings as $ratingtype => $rating ) {
 			if ( $rating === null || $rating === 'null'
 				|| $rating === false || $rating === 'false' ) {
-				$DB->query("DELETE FROM `ratings` 
+				gfDBQuery("DELETE FROM `ratings` 
 					WHERE `ratingtype` = $ratingtype
 						AND `reviewid` = $id");
 				continue;
@@ -80,40 +78,40 @@ class PageEditreview extends Page {
 			if ( $rating === false )
 				$rating = -1;
 			
-			$DB->query("SELECT `id` FROM `ratings` 
+			$i = gfDBQuery("SELECT `id` FROM `ratings` 
 					WHERE `ratingtype` = $ratingtype
 						AND `reviewid` = $id");
 			
-			if ( $DB->get_num_rows() == 1 )
-				$DB->query("UPDATE `ratings` 
+			if ( gfDBGetNumRows($i) == 1 )
+				gfDBQuery("UPDATE `ratings` 
 					SET `rating` = $rating 
 					WHERE `ratingtype` = $ratingtype
 						AND `reviewid` = $id");
 			else
-				$DB->query("INSERT INTO `ratings`
+				gfDBQuery("INSERT INTO `ratings`
 					SET `rating` = $rating, 
 						`ratingtype` = $ratingtype,
 						`reviewid` = $id");
 		}
 		
-		$DB->query("SELECT COUNT(`id`) AS amount, 
+		$i = gfDBQuery("SELECT COUNT(`id`) AS amount, 
 					SUM(`rating`) AS total
 				FROM `reviews` 
 				WHERE `episodeid` = $episodeid AND `rating` != -1");
 		
-		$result = $DB->get_result();
+		$result = gfDBGetResult($i);
 		
 		$episoderating = ($result['total']/$result['amount'])*10;
 		
-		$DB->query("UPDATE `episodes` 
+		gfDBQuery("UPDATE `episodes` 
 			SET `rating` = $episoderating 
 			WHERE `id` = $episodeid");
 		
-		$DB->query("SELECT `season`, `inseason`, `type`
+		gfDBQuery("SELECT `season`, `inseason`, `type`
 			FROM `episodes` 
 			WHERE `id` = $episodeid");
 		
-		$result = $DB->get_result();
+		$result = gfDBGetResult($i);
 		
 		$inseason = $result['inseason'];
 		if ( $inseason < 10 )
@@ -126,15 +124,13 @@ class PageEditreview extends Page {
 	}
 	
 	private function createForm() {
-		global $DB, $auth;
-		
 		$id = $this->id;
 		
-		$DB->query("SELECT * FROM `reviews` WHERE `id` = $id");
+		$i = gfDBQuery("SELECT * FROM `reviews` WHERE `id` = $id");
 		
-		$result = $DB->get_result();
+		$result = gfDBGetResult($i);
 		
-		if ( $result['userid'] != $auth->get_userdata('userid') ) {
+		if ( $result['userid'] != gfGetAuth()->get_userdata('userid') ) {
 			header('Location: /');
 			return;
 		}
@@ -144,9 +140,9 @@ class PageEditreview extends Page {
 			'rating-overall' => $result['rating']
 		);
 		
-		$DB->query("SELECT * FROM `ratings` WHERE `reviewid` = $id");
+		$i = gfDBQuery("SELECT * FROM `ratings` WHERE `reviewid` = $id");
 		
-		while ( $result = $DB->get_result() ) {
+		while ( $result = gfDBGetResult($i) ) {
 			$data['ratingtype-'.$result['ratingtype']] = $result['rating'];
 		}
 		
