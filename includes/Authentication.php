@@ -1,6 +1,6 @@
 <?php
 
-class auth {
+class Authentication {
 
 	private $verifiedLogins = array();
 	private $loggedIn = false;
@@ -15,26 +15,33 @@ class auth {
 		'userid'   => 0,
 	);
 	
-	function auth() {
+	public static function get ( ) {
+		global $auth;
+		if ( is_null($auth) )
+			$auth = new Authentication();
+		return $auth;
+	}
+	
+	public function __construct ( ) {
 		$this->loggedIn = $this->checkCookieLogin();
 		$this->mode = $this->getSetMode();
 	}
 	
-	function get_userdata($data) {
+	public function get_userdata($data) {
 		if ( $this->isLoggedIn() )
 			return $this->userData[$data];
 		return null;
 	}
 	
-	function getMode () {
+	public function getMode () {
 		return $this->mode;
 	}
 	
-	function isReviewer() {
+	public function isReviewer() {
 		return $this->reviewer;
 	}
 	
-	function isAdmin() {
+	public function isAdmin() {
 		return $this->admin;
 	}
 	
@@ -74,7 +81,7 @@ class auth {
 		return true;
 	}
 	
-	function setMode($mode) {
+	public function setMode($mode) {
 		if ( !in_array($mode, $this->acceptedModes) ) {
 			return;
 		}
@@ -82,11 +89,11 @@ class auth {
 		setcookie('reviews-mode', $mode, time()+365*24*60*60);
 	}
 	
-	function isLoggedIn() {
+	public function isLoggedIn() {
 		return $this->loggedIn;
 	}	
 
-	function verifyLoginCombo($username, $password, $passwordIsMd5 = false) {
+	public function verifyLoginCombo($username, $password, $passwordIsMd5 = false) {
 		global $DB;
 		
 		if ( !$passwordIsMd5 )
@@ -113,7 +120,7 @@ class auth {
 		return true;
 	}
 	
-	function performLogin($username, $password, $passwordIsMd5 = false) {
+	public function performLogin($username, $password, $passwordIsMd5 = false) {
 		if ( !$this->verifyLoginCombo($username, $password, $passwordIsMd5) )
 			return false;
 		
