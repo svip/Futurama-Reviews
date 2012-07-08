@@ -1,6 +1,6 @@
 <?php
 
-require('includes/GlobalVariables.php')
+require('includes/GlobalVariables.php');
 
 require('config.php');
 
