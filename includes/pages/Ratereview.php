@@ -5,7 +5,7 @@ if ( !defined('REVIEWS') )
 
 class PageRatereview extends Page {
 
-	function ratereview() {
+	protected function render ( ) {
 		$this->handleRating();
 	}
 	
