@@ -3,7 +3,7 @@
 if ( !defined('REVIEWS') )
 	header('Location: ../');
 
-class ratereview extends page {
+class PageRatereview extends Page {
 
 	function ratereview() {
 		$this->handleRating();
@@ -42,5 +42,3 @@ class ratereview extends page {
 	}
 
 }
-
-$page = new ratereview();

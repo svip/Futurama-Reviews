@@ -3,9 +3,9 @@
 if ( !defined('REVIEWS') )
 	header('Location: ../');
 
-class setmode extends page {
+class PageSetmode extends Page {
 	
-	function setmode() {
+	protected function render ( ) {
 		global $auth;
 		
 		$auth->setMode($_GET['mode']);
@@ -14,5 +14,3 @@ class setmode extends page {
 	}
 	
 }
-
-$page = new setmode();

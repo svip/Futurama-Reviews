@@ -3,9 +3,9 @@
 if ( !defined('REVIEWS') )
 	header('Location: ../');
 
-class index extends page {	
+class PageIndex extends Page {
 	
-	function index() {
+	protected function render ( ) {
 		$this->makeIndex();
 	}
 	
@@ -166,5 +166,3 @@ class index extends page {
 	}
 	
 }
-
-$page = new index();

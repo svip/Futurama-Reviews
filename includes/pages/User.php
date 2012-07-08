@@ -3,9 +3,9 @@
 if ( !defined('REVIEWS') )
 	header('Location: ../');
 
-class user extends page {
+class PageUser extends Page {
 
-	function user() {
+	protected function render ( ) {
 		$this->makePage();
 	}
 	
@@ -67,5 +67,3 @@ class user extends page {
 	}
 
 }
-
-$page = new user();

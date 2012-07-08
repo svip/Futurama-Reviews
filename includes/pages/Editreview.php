@@ -3,12 +3,12 @@
 if ( !defined('REVIEWS') )
 	header('Location: ../');
 
-class editreview extends page {
+class PageEditreview extends Page {
 
 	private $id = 0;
 	private $postErrors = array();
 	
-	function editreview() {
+	protected function render ( ) {
 		$id = $_GET['id'];
 		
 		if ( !is_numeric($id) || $id < 1 ) {
@@ -153,5 +153,3 @@ class editreview extends page {
 		$this->content = $this->reviewForm(array(), $data, 'edit');
 	}
 }
-
-$page = new editreview();

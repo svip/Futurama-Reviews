@@ -3,9 +3,9 @@
 if ( !defined('REVIEWS') )
 	header('Location: ../');
 
-class updateratings extends page {
+class PageUpdateratings extends Page {
 	
-	public function __construct() {
+	protected function render ( ) {
 		global $auth;
 		
 		if ( !$auth->isAdmin() ) {
@@ -61,5 +61,3 @@ class updateratings extends page {
 			header('Location: ?p=episode&episode='.$this->prodCode($result['season'], $inseason));
 	}
 }
-
-$page = new updateratings();

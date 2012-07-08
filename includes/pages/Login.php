@@ -3,9 +3,9 @@
 if ( !defined('REVIEWS') )
 	header('Location: ../');
 	
-class login extends page {
+class PageLogin extends Page {
 
-	function login() {
+	protected function render ( ) {
 		if ( $_POST['submit-login'] ) {
 			$this->handleLogin();
 		} else {
@@ -55,5 +55,3 @@ class login extends page {
 </form>';
 	}
 }
-
-$page = new login();

@@ -3,7 +3,7 @@
 if ( !defined('REVIEWS') )
 	header('Location: ../');
 
-class faq extends page {
+class PageFaq extends Page {
 
 	private $questions = array(
 		"What's this?" => 'A <i>Futurama</i> review site.',
@@ -16,7 +16,7 @@ class faq extends page {
 		'Can you tell me about the modes on each page?' => "Certainly.  There is currently 3 modes available; <b>Reviewer</b>, <b>No ratings</b> and <b>Default</b>.  <b>Default</b> is, as its name implies, the default viewing mode; full ratings and full reviews.  <b>No ratings</b> removes all numeral ratings from reviews and overview and only focuses on the written content of reviews.  Some people may find the numbers distraction for someone's opinion on an episode. <b>Reviewer</b> is a mode only accessible to reviewers, in this mode, only the reviews of the reviewer appears.  This is to avoid the context of other reviews and only review the episode from one's own standpoint.",
 	);
 	
-	function faq() {
+	protected function render ( ) {
 		$content = "<dl class=\"faq\">\n";
 		
 		foreach( $this->questions as $question => $answer ) {
@@ -31,5 +31,3 @@ class faq extends page {
 	}
 
 }
-
-$page = new faq();

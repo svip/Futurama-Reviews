@@ -3,12 +3,12 @@
 if ( !defined('REVIEWS') )
 	header('Location: ../');
 
-class register extends page {
+class PageRegister extends Page {
 
 	private $postErrors = array();
 	private $postData = array();
 
-	function register() {
+	protected function render ( ) {
 		if ( $_POST['submit-register'] ) {
 			$this->handleRegisterPost();
 		}
@@ -103,5 +103,3 @@ class register extends page {
 	}
 	
 }
-
-$page = new register();

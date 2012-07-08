@@ -3,7 +3,7 @@
 if ( !defined('REVIEWS') )
 	header('Location: ../');
 
-class episode extends page {
+class PageEpisode extends Page {
 
 	private $type = 'e';
 	private $postErrors = array();
@@ -43,7 +43,7 @@ class episode extends page {
 	{{MISCRATINGS}}
 </table>';
 
-	function episode() {
+	protected function render ( ) {
 		if ( $_POST['submit-review'] ) {
 			$this->handleReviewPost();
 		}
@@ -478,5 +478,3 @@ class episode extends page {
 		return $content;
 	}
 }
-
-$page = new episode();
