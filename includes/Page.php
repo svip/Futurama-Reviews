@@ -181,15 +181,15 @@ abstract class Page {
 		return $div;
 	}
 	
-	protected function otherFormRatings($errors = array(), $data = array()) {
-		global $DB;
+	protected function otherFormRatings($errors = array(),
+			$data = array()) {
 		
-		$DB->query("SELECT * FROM `ratingtypes`");
+		$i = gfDBQuery("SELECT * FROM `ratingtypes`");
 		
 		$content = '';
 		$types = '';
 		
-		while ( $result = $DB->get_result() ) {
+		while ( $result = gfDBGetResult($i) ) {
 			$content .= '			<div>
 				<label for="ratingtype-'.$result['id'].'-1">'.$result['name'].':'.$this->errorMsg($errors, 'ratingtype-'.$result['id']).'</label>
 				'.$this->radio('ratingtype-'.$result['id'], 1, 10, $result['nullstring'], $data).'
@@ -203,9 +203,7 @@ abstract class Page {
 	}
 	
 	protected function reviewEditLink($id, $userid) {
-		global $auth;
-		
-		if ( $auth->get_userdata('userid') != $userid )
+		if ( gfGetAuth()->get_userdata('userid') != $userid )
 			return '';
 		
 		return '
