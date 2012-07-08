@@ -91,7 +91,7 @@ class Authentication {
 		return $this->loggedIn;
 	}	
 
-	public function verifyLoginCombo($username, $password
+	public function verifyLoginCombo($username, $password,
 			$passwordIsMd5 = false) {
 		
 		if ( !$passwordIsMd5 )
