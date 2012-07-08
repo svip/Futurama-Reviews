@@ -6,9 +6,7 @@ if ( !defined('REVIEWS') )
 class PageUpdateratings extends Page {
 	
 	protected function render ( ) {
-		global $auth;
-		
-		if ( !$auth->isAdmin() ) {
+		if ( !gfGetAuth()->isAdmin() ) {
 			header('Location: /');
 			return;
 		}
@@ -28,28 +26,26 @@ class PageUpdateratings extends Page {
 	}
 	
 	protected function render ( ) {
-		global $DB, $auth;
-		
 		$episodeid = $this->id;
 		
-		$DB->query("SELECT COUNT(`id`) AS amount, 
+		$i = gfDBQuery("SELECT COUNT(`id`) AS amount, 
 					SUM(`rating`) AS total
 				FROM `reviews` 
 				WHERE `episodeid` = $episodeid AND `rating` != -1");
 		
-		$result = $DB->get_result();
+		$result = gfDBGetResult($i);
 		
 		$episoderating = ($result['total']/$result['amount'])*10;
 		
-		$DB->query("UPDATE `episodes` 
+		gfDBQuery("UPDATE `episodes` 
 			SET `rating` = $episoderating 
 			WHERE `id` = $episodeid");
 		
-		$DB->query("SELECT `season`, `inseason`, `type`
+		$i = gfDBQuery("SELECT `season`, `inseason`, `type`
 			FROM `episodes` 
 			WHERE `id` = $episodeid");
 		
-		$result = $DB->get_result();
+		$result = gfDBGetResult($i);
 		
 		$inseason = $result['inseason'];
 		if ( $inseason < 10 )
