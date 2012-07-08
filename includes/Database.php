@@ -1,6 +1,6 @@
 <?php
-//The class db_driver
-class db_driver {
+
+class Database {
 	private $sql = array(
 			'host' => 'localhost',
 			'name' => '',
@@ -11,26 +11,32 @@ class db_driver {
 	private $con_id 	= '';
 	private $query_array = array();
 	private $id_array = array();
+	private $result = array();
 	private $query_amount = 0;
 	
-	function db_driver($dbhost, $dbname, $dbuser, $dbpass) {
+	function Database ( $dbhost, $dbname, $dbuser, $dbpass ) {
 		$this->sql['host'] = $dbhost;
 		$this->sql['name'] = $dbname;
 		$this->sql['user'] = $dbuser;
 		$this->sql['pass'] = $dbpass;
+		
+		$this->connect();
 	}
-
+	
 	/**
 	 * This function connects to the host and then the database.
 	 * 
 	 * @return TRUE upon succes, FALSE upon failure
 	 */
-	function connect() {
-		$this->con_id = @mysql_connect($this->sql['host'], $this->sql['user'], $this->sql['pass']);
-		if ( !mysql_select_db($this->sql['name'], $this->con_id) )
-		{
+	function connect ( ) {
+		$this->con_id = @mysqli_connect($this->sql['host'], $this->sql['user'], $this->sql['pass']);
+		
+		if ( $this->con_id === false )
 			return false;
-		}
+		
+		if ( !mysqli_select_db($this->con_id, $this->sql['name']) )
+			return false;
+		
 		return true;
 	}
 	
@@ -43,25 +49,30 @@ class db_driver {
 	 * @param $store int[optional] Where to store the resource
 	 * @return The query resource on succes, FALSE upon failure
 	 */
-	function query($sql, $store = 0) {
-		//echo $sql."<br /><br /><br />\n";
-		if((is_numeric($store)) && ($store>0)) {
-				$this->query_array[$store] = "\0";
-				if($this->query_array[$store] = mysql_query($sql, $this->con_id)) {
-					$this->id_array[$store] = mysql_insert_id($this->con_id);
-					$this->query_amount++;
-					return $this->query_array[$store];
-				}
-				$this->id_array[$store] = false;
-				return false;
-		}
-		$this->query_array[0] = "\0";
-		if($this->query_array[0] = mysql_query($sql, $this->con_id)) {
-			$this->id_array[0] = mysql_insert_id($this->con_id);
+	function query ( $sql, $store = 0 ) {
+		global $Debug;
+		
+		if ( $this->con_id === false )
+			return false;
+		
+		if ( !is_numeric($store) || $store<0 )
+			return false;
+		
+		$this->query_array[$store] = "\0";
+		
+		if ( $this->query_array[$store] = mysqli_query ( $this->con_id, $sql ) ) {
+			$this->id_array[$store] = mysqli_insert_id($this->con_id);
 			$this->query_amount++;
-			return $this->query_array[0];
+			$this->ready_result($store);
+			return $this->query_array[$store];
 		}
-		$this->id_array[0] = false;
+		
+		if ( $Debug ) {
+			echo $sql;
+			echo mysqli_error($this->con_id);
+		}
+		
+		$this->id_array[$store] = false;
 		return false;
 	}
 	
@@ -73,17 +84,32 @@ class db_driver {
 	 * @param $store int[optional] Where to get the result from
 	 * @return The current row, FALSE upon failure
 	 */
-	function get_result($store = 0) {
-		if((is_numeric($store)) && ($store>0)) {
-				if($this->query_array[$store]) {
-					return mysql_fetch_assoc($this->query_array[$store]);
-				}
-				return false;
+	function get_result ( $store = 0 ) {
+		if ( !is_numeric($store) || $store<0 )
+			return false;
+		
+		if ( isset($this->result[$store]) )
+			return array_shift($this->result[$store]);
+		
+		if ( $this->query_array[$store] ) {
+			$this->ready_result($store);
+			
+			return array_shift($this->result[$store]);
 		}
-		if($this->query_array[0]) {
-			return mysql_fetch_assoc($this->query_array[0]);
-		}
+		
 		return false;
+	}
+	
+	private function ready_result ( $store ) {
+		if ( is_bool($this->query_array[$store]) )
+			return false;
+		
+		$this->result[$store] = array();
+		do {
+			while ( $row = mysqli_fetch_assoc($this->query_array[$store]) ) {
+				$this->result[$store][] = $row;
+			}
+		} while ( mysqli_next_result($this->con_id) );
 	}
 	
 	/**
@@ -92,11 +118,10 @@ class db_driver {
 	 * @param $store int[optional] What resource to get the information from
 	 * @return int, 0 upon no resource or 0 rows
 	 */
-	function get_num_rows($store = 0) {
-		if((is_numeric($store)) && ($store>0)) {
-			return mysql_num_rows($this->query_array[$store]);
-		}
-		return @mysql_num_rows($this->query_array[0]);
+	function get_num_rows ( $store = 0 ) {
+		if ( is_bool($this->query_array[$store]) )
+			return false;
+		return @mysqli_num_rows($this->query_array[$store]);
 	}
 	
 	/**
@@ -105,12 +130,15 @@ class db_driver {
 	 * @param $store int[optional] Resource to optain id
 	 * @return int the id of the last insert query, FALSE upon failure
 	 */
-	function get_insert_id($store = 0) {
+	function get_insert_id ( $store = 0 ) {
 		return $this->id_array[$store];
 	}
 	
-	function get_query_amount() {
+	function get_query_amount ( ) {
 		return $this->query_amount;
 	}
+	
+	function escape_string ( $string ) {
+		return mysqli_real_escape_string($this->con_id, $string);
+	}
 }
-?>
