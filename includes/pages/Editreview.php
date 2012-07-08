@@ -18,7 +18,7 @@ class PageEditreview extends Page {
 		
 		$this->id = $id;
 		
-		if ( $_POST['submit-editreview'] ) {
+		if ( isset($_POST['submit-editreview']) ) {
 			$this->handleEditReview();
 		}
 		$this->createForm();

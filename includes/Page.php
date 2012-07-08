@@ -116,7 +116,7 @@ abstract class Page {
 	protected function postData($dataArray, $id) {
 		if ( isset ( $dataArray[$id] ) )
 			return stripslashes($dataArray[$id]);
-		if ( $_POST[$id] )
+		if ( isset($_POST[$id]) )
 			return stripslashes($_POST[$id]);
 		return '';
 	}
