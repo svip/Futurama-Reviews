@@ -44,7 +44,7 @@ class PageEpisode extends Page {
 </table>';
 
 	protected function render ( ) {
-		if ( $_POST['submit-review'] ) {
+		if ( isset($_POST['submit-review']) ) {
 			$this->handleReviewPost();
 		}
 		$this->makePage();
