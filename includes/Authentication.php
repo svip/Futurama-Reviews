@@ -69,7 +69,7 @@ class Authentication {
 			FROM `users`
 			WHERE LOWER(`username`) = '".strtolower($username)."'");
 		
-		$result = gfDBGetResult$($i);
+		$result = gfDBGetResult($i);
 		
 		$this->userData['username'] = $result['username'];
 		$this->userData['userid'] = $result['id'];
