@@ -63,7 +63,10 @@ class PageIndex extends Page {
 				} else {
 					$reviews = 0;
 				}
-				$rating = $episodesCheck[$result['id']]*10;
+				if ( isset($episodesCheck[$result['id']]) )
+					$rating = $episodesCheck[$result['id']]*10;
+				else
+					$rating = 0;
 			} elseif ( gfGetAuth()->getMode() == 'noratings' ) {
 				$reviews = $result['reviews'];
 				$rating = null;
