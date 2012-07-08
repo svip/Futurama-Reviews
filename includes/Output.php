@@ -13,7 +13,7 @@ class Output {
 	}
 
 	public static function RenderPage( $page ) {
-		$template = file_get_contents('template.html');
+		$template = file_get_contents('includes/template.html');
 		
 		echo str_replace(
 			array(
