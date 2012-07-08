@@ -56,8 +56,6 @@ class Authentication {
 	}
 	
 	private function checkCookieLogin() {
-		global $DB;
-		
 		$username = $_COOKIE['reviews-username'];
 		$password = $_COOKIE['reviews-password'];
 		
@@ -67,11 +65,11 @@ class Authentication {
 		if(!$this->verifyLoginCombo($username, $password, true))
 			return false;
 		
-		$DB->query("SELECT `username`, `id`, `reviewer`, `admin`
+		$i = gfDBQuery("SELECT `username`, `id`, `reviewer`, `admin`
 			FROM `users`
 			WHERE LOWER(`username`) = '".strtolower($username)."'");
 		
-		$result = $DB->get_result();
+		$result = gfDBGetResult$($i);
 		
 		$this->userData['username'] = $result['username'];
 		$this->userData['userid'] = $result['id'];
@@ -93,8 +91,8 @@ class Authentication {
 		return $this->loggedIn;
 	}	
 
-	public function verifyLoginCombo($username, $password, $passwordIsMd5 = false) {
-		global $DB;
+	public function verifyLoginCombo($username, $password
+			$passwordIsMd5 = false) {
 		
 		if ( !$passwordIsMd5 )
 			$password = md5($password);
@@ -102,14 +100,14 @@ class Authentication {
 		if ( isset($this->verifiedLogins[$username][$password]) )
 			return $this->verifiedLogins[$username][$password];
 		
-		$DB->query("SELECT `password` FROM `users` WHERE LOWER(`username`) = '".strtolower($username)."'");
+		$i = gfDBQuery("SELECT `password` FROM `users` WHERE LOWER(`username`) = '".strtolower($username)."'");
 		
-		if ( $DB->get_num_rows() != 1 ) {
+		if ( gfDBGetNumRows($i) != 1 ) {
 			$this->verifiedLogins[$username] = array($password => false);
 			return false;
 		}
 		
-		$result = $DB->get_result();
+		$result = gfDBGetResult($i);
 		
 		if ( $password != $result['password'] ) {
 			$this->verifiedLogins[$username] = array($password => false);
