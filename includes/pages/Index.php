@@ -10,21 +10,19 @@ class PageIndex extends Page {
 	}
 	
 	private function makeIndex() {
-		global $DB, $auth;
-		
 		$episodesCheck = array();
 		
-		if ( $auth->isLoggedIn() ) {
-			$userid = $auth->get_userdata('userid');
-			$DB->query("SELECT `episodeid`, `rating`
+		if ( gfGetAuth()->isLoggedIn() ) {
+			$userid = gfGetAuth()->get_userdata('userid');
+			$i = gfDBQuery("SELECT `episodeid`, `rating`
 				FROM `reviews`
 				WHERE `userid` = $userid");
-			while ( $result = $DB->get_result() ) {
+			while ( $result = gfDBGetResult($i) ) {
 				$episodesCheck[$result['episodeid']] = $result['rating'];
 			}
 		}
 		
-		$DB->query("SELECT *
+		$i = gfDBQuery("SELECT *
 			FROM `episodes`
 			ORDER BY `season`, `type` DESC, `inseason`");
 		$table = '{{TOC}}
@@ -47,7 +45,7 @@ class PageIndex extends Page {
 		
 		$n = 0;
 		
-		while ( $result = $DB->get_result() ) {
+		while ( $result = gfDBGetResult($i) ) {
 			$n++;
 			if ( $result['season'] > $curseason ) {
 				$curseason = $result['season'];
@@ -59,14 +57,14 @@ class PageIndex extends Page {
 				$seasonReviews[$result['season']] = 0;
 				$seasons++;
 			}
-			if ( $auth->getMode() == 'reviewer' ) {
+			if ( gfGetAuth()->getMode() == 'reviewer' ) {
 				if ( count($episodesCheck) > 0 && isset($episodesCheck[$result['id']]) ) {
 					$reviews = 1;
 				} else {
 					$reviews = 0;
 				}
 				$rating = $episodesCheck[$result['id']]*10;
-			} elseif ( $auth->getMode() == 'noratings' ) {
+			} elseif ( gfGetAuth()->getMode() == 'noratings' ) {
 				$reviews = $result['reviews'];
 				$rating = null;
 			} else {
@@ -118,7 +116,7 @@ class PageIndex extends Page {
 			);
 		}
 		
-		if ( $auth->isLoggedIn() ) {
+		if ( gfGetAuth()->isLoggedIn() ) {
 			$table .= '<p>* Episodes/films you have all ready reviewed.</p>';
 		}
 		
