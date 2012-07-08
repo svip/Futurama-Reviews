@@ -1,0 +1,187 @@
+body {
+	font-family: sans-serif;
+}
+
+a {
+	color: #0000aa;
+}
+
+a:hover {
+	text-decoration: none;
+}
+
+#panel {
+	float: right;
+	width: 30%;
+	text-align: right;
+}
+
+.modes {
+	font-size: 80%;
+}
+
+.clear {
+	clear: both;
+}
+
+div.review {
+	border: 1px solid #aaa;
+	background: #f0f0f0;
+	padding: 5px 15px;
+	margin: 5px 0px;
+}
+
+.editlink {
+	float: right;
+}
+
+table {
+	width: 100%;
+	background: #d3d3d3;
+}
+
+table.infobox {
+	width: 450px !important;
+}
+
+div.review table {
+	float: right;
+	width: 30%;
+	margin-left: 15px;
+}
+
+div.review table th {
+	width: 65%;
+}
+
+table th, table td {
+	padding: 2px 4px;
+}
+
+table th {
+	background: #e3e3e3;
+}
+
+table td {
+	background: #f3f3f3;
+}
+
+table .season th {
+	text-align: left;
+	font-size: 125%;
+}
+
+.reviewrating {
+	text-align: right;
+	font-size: 90%;
+}
+
+.rating-approval {
+	color: #0a0;
+}
+
+.rating-disapproval {
+	color: #a00;
+}
+
+fieldset {
+	background: #f0f0f0;
+	width: 60%;
+	border: 1px solid #aaa;
+}
+
+fieldset.review {
+	width: auto !important;
+}
+
+fieldset.review fieldset {
+	background: #e6e6e6;
+	width: 46%;
+	float: left;
+}
+
+label {
+	font-weight: bold;
+}
+
+label, input, textarea {
+	width: 100%;
+	float: left;
+	clear: left;
+}
+
+fieldset.review textarea {
+	height: 348px;
+}
+
+fieldset.ratings div.ratingcontainer {
+	height: 400px;
+	overflow: auto;
+}
+
+fieldset.ratings div div {
+	border: 1px solid #aaa;
+	background: #dbdbdb;
+	margin: 4px 1px;
+	padding: 3px 5px;
+}
+
+input[type=submit] {
+	width: auto !important;
+	float: right;
+}
+
+.radiobuttons {
+	border: none !important;
+	margin: 0 !important;
+}
+
+.radiobuttons label {
+	font-weight: normal !important;
+}
+
+.radiobuttons label, .radiobuttons input {
+	float: none;
+	clear: none;
+}
+
+.radiobuttons hr {
+	margin: 1px 0;
+	border: none;
+	border-top: 1px solid #aaa;
+}
+
+.error {
+	font-weight: bold;
+	color: #aa0000;
+}
+
+.faq dt {
+	font-weight: bold;
+	clear: left;
+	font-size: 125%;
+}
+
+.faq dt:before {
+	content: "Q ";
+	font-weight: normal;
+	font-size: 125%;
+	float: left;
+	font-family: serif;
+	margin-right: 10px;
+	color: #a00;
+}
+
+.faq dd {
+	padding-top: 3px;
+	margin-bottom: 8px;
+}
+
+.faq dd:before {
+	content: "A ";
+	font-size: 150%;
+	float: left;
+	font-family: serif;
+	margin-right: 10px;
+	color: #00a;
+}
