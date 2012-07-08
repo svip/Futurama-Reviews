@@ -51,8 +51,6 @@ class PageEpisode extends Page {
 	}
 	
 	private function getEpisodeId() {
-		global $DB;
-		
 		$this->type = 'e';
 		
 		if ( $this->id != null )
@@ -73,12 +71,12 @@ class PageEpisode extends Page {
 		$season = $episode[0]+0;
 		$inseason = $episode[1]+0;
 		
-		$DB->query("SELECT `id` FROM `episodes` WHERE `season` = $season AND `inseason` = $inseason");
+		$i = gfDBQuery("SELECT `id` FROM `episodes` WHERE `season` = $season AND `inseason` = $inseason");
 		
-		if ( $DB->get_num_rows() === 0 )
+		if ( gfDBGetNumRows($i) === 0 )
 			return null;
 		
-		$result = $DB->get_result();
+		$result = gfDBGetResult($i);
 		
 		$this->id = $result['id'];
 		
@@ -86,8 +84,6 @@ class PageEpisode extends Page {
 	}
 	
 	private function getFilmId() {
-		global $DB;
-		
 		$this->type = 'f';
 		
 		if ( $this->id != null )
@@ -108,12 +104,12 @@ class PageEpisode extends Page {
 		$season = $film[0]+0;
 		$inseason = ($film[1]-1)*4+1;
 		
-		$DB->query("SELECT `id` FROM `episodes` WHERE `season` = $season AND `inseason` = $inseason");
+		$i = gfDBQuery("SELECT `id` FROM `episodes` WHERE `season` = $season AND `inseason` = $inseason");
 		
-		if ( $DB->get_num_rows() === 0 )
+		if ( gfDBGetNumRows($i) === 0 )
 			return null;
 		
-		$result = $DB->get_result();
+		$result = gfDBGetResult($i);
 		
 		$this->id = $result['id'];
 		
@@ -121,8 +117,6 @@ class PageEpisode extends Page {
 	}
 	
 	private function getIdFromReview() {
-		global $DB;
-		
 		$reviewid = $_GET['review'];
 		
 		if ( $this->id != null )
@@ -131,16 +125,16 @@ class PageEpisode extends Page {
 		if ( !is_numeric($reviewid) || $reviewid <= 0 )
 			return null;
 		
-		$DB->query("SELECT e.`type`, e.`id` 
+		$i = gfDBQuery("SELECT e.`type`, e.`id` 
 			FROM `reviews` r 
 				JOIN `episodes` e 
 					ON e.`id` = r.`episodeid`
 			WHERE r.`id` = $reviewid");
 		
-		if ( $DB->get_num_rows() === 0 )
+		if ( gfDBGetNumRows($i) === 0 )
 			return null;
 		
-		$result = $DB->get_result();
+		$result = gfDBGetResult($i);
 		
 		$this->type = $result['type'];
 		
@@ -163,15 +157,13 @@ class PageEpisode extends Page {
 	
 	
 	private function handleReviewPost() {
-		global $DB, $auth;
-		
 		$id = $this->getId();
 		if ( $id == null ) {
 			header('Location: /');
 			return;
 		}
 			
-		if ( !$auth->isReviewer() || $this->haveWrittenReview($id, $auth->get_userdata('userid') ) )
+		if ( !gfGetAuth()->isReviewer() || $this->haveWrittenReview($id, gfGetAuth()->get_userdata('userid') ) )
 			return;
 		
 		$content = addslashes($_POST['content']);
@@ -195,44 +187,42 @@ class PageEpisode extends Page {
 		if ( count($this->postErrors)>0 )
 			return;
 		
-		$userid = $auth->get_userdata('userid');
+		$userid = gfGetAuth()->get_userdata('userid');
 		
-		$DB->query("INSERT INTO `reviews` SET `episodeid` = $id, `userid` = $userid,
+		$i = gfDBQuery("INSERT INTO `reviews` SET `episodeid` = $id, `userid` = $userid,
 			`content` = '$content', `rating` = $overallrating, `date` = ".time());
 		
-		$reviewid = $DB->get_insert_id();
+		$reviewid = gfDBGetInsertId($i);
 		
 		foreach ( $ratings as $ratingtype => $rating ) {
 			if ( $rating === null || $rating === false )
 				continue;
 			if ( $rating === false )
 				$rating = -1;
-			$DB->query("INSERT INTO `ratings`
+			gfDBQuery("INSERT INTO `ratings`
 				SET `reviewid` = $reviewid,
 					`ratingtype` = $ratingtype, `rating` = $rating");
 		}
 		
-		$DB->query("SELECT COUNT(`id`) AS amount, SUM(`rating`) AS total
+		$i = gfDBQuery("SELECT COUNT(`id`) AS amount, SUM(`rating`) AS total
 				FROM `reviews` WHERE `episodeid` = $id AND `rating` != -1");
 		
-		$result = $DB->get_result();
+		$result = gfDBGetResult($i);
 		
 		$episoderating = ($result['total']/$result['amount'])*10;
 		
-		$DB->query("UPDATE `episodes` 
+		gfDBQuery("UPDATE `episodes` 
 				SET `rating` = $episoderating,
 					`reviews` = `reviews`+1
 				WHERE `id` = $id");
 	}
 	
 	private function createNavigation ( $episodeid ) {
-		global $DB;
-		
-		$DB->query("SELECT `inseason`, `season`, `type`
+		$i = gfDBQuery("SELECT `inseason`, `season`, `type`
 			FROM `episodes`
 			WHERE `id` = $episodeid");
 		
-		$result = $DB->get_result();
+		$result = gfDBGetResult($i);
 		$season = $result['season'];
 		$inseason = $result['inseason'];
 		$type = $result['type'];
@@ -240,7 +230,7 @@ class PageEpisode extends Page {
 		$pinseason = ($type=='f'?$inseason-4:$inseason-1);
 		$ninseason = ($type=='f'?$inseason+4:$inseason+1);
 		
-		$DB->query("SELECT `season`, `inseason`, `title`, `type`
+		$i = gfDBQuery("SELECT `season`, `inseason`, `title`, `type`
 			FROM `episodes`
 			WHERE
 				CASE WHEN $inseason = 1
@@ -254,15 +244,15 @@ class PageEpisode extends Page {
 		
 		$previous = '-';
 		
-		if ( $DB->get_num_rows() > 0 ) {
-			$result = $DB->get_result();
+		if ( gfDBGetNumRows($i) > 0 ) {
+			$result = gfDBGetResult($i);
 			if ( $result['type'] == 'e' )
 				$previous = '<a href="/?p=episode&amp;episode='.$this->prodCode($result['season'], $result['inseason']).'">'.$result['title'].'</a>';
 			else
 				$previous = '<a href="/?p=episode&amp;film='.$this->filmCode($result['season'], $result['inseason']).'"><i>'.$result['title'].'</i></a>';
 		}
 		
-		$DB->query("SELECT `season`, `inseason`, `title`, `type`
+		$i = gfDBQuery("SELECT `season`, `inseason`, `title`, `type`
 			FROM `episodes`
 			WHERE
 				CASE WHEN EXISTS(SELECT `id`
@@ -278,8 +268,8 @@ class PageEpisode extends Page {
 		
 		$next = '-';
 		
-		if ( $DB->get_num_rows() > 0 ) {
-			$result = $DB->get_result();
+		if ( gfDBGetNumRows($i) > 0 ) {
+			$result = gfDBGetResult($i);
 			if ( $result['type'] == 'e' )
 				$next = '<a href="/?p=episode&amp;episode='.$this->prodCode($result['season'], $result['inseason']).'">'.$result['title'].'</a>';
 			else
@@ -310,22 +300,20 @@ class PageEpisode extends Page {
 	}
 	
 	private function makePage() {
-		global $DB, $auth;
-		
 		$id = $this->getId();
 		if ( $id == null ) {
 			header('Location: /');
 			return;
 		}
 		
-		$DB->query("SELECT * FROM `episodes` WHERE `id` = $id");
+		$i = gfDBQuery("SELECT * FROM `episodes` WHERE `id` = $id");
 		
-		if ( $DB->get_num_rows() === 0 ) {
+		if ( gfDBGetNumRows($i) === 0 ) {
 			header('Location: /');
 			return;		
 		}
 		
-		$result = $DB->get_result();
+		$result = gfDBGetResult($i);
 		
 		$this->title = $result['title'];
 		
@@ -348,7 +336,7 @@ class PageEpisode extends Page {
 					$result['season'].'ACV'.$inseason,
 					$result['reviews'],
 					$this->renderPercentageRating($result['rating']),
-					($auth->isAdmin()
+					(gfGetAuth()->isAdmin()
 						?' (<a href="./?p=updateratings&amp;id='.$id.'">Update</a>)'
 						:''
 					),
@@ -368,7 +356,7 @@ class PageEpisode extends Page {
 					$t[1],
 					$result['reviews'],
 					$this->renderPercentageRating($result['rating']),
-					($auth->isAdmin()
+					(gfGetAuth()->isAdmin()
 						?' (<a href="./?p=updateratings&amp;id='.$id.'">Update</a>)'
 						:''
 					),
@@ -390,7 +378,7 @@ class PageEpisode extends Page {
 		
 		$content = str_replace('{{MISCRATINGS}}', $ratingscontent, $content);
 		
-		if ( $auth->isLoggedIn() && $auth->isReviewer() && !$this->haveWrittenReview($id, $auth->get_userdata('userid')) ) {
+		if ( gfGetAuth()->isLoggedIn() && gfGetAuth()->isReviewer() && !$this->haveWrittenReview($id, gfGetAuth()->get_userdata('userid')) ) {
 			$content .= $this->reviewForm($this->postErrors);
 		}
 		
@@ -398,39 +386,35 @@ class PageEpisode extends Page {
 	}
 	
 	private function haveWrittenReview($episodeid, $userid) {
-		global $DB;
-		
 		if ( is_null($episodeid) || is_null($userid) )
 			return false;
 		
-		$DB->query("SELECT `id` FROM `reviews` WHERE `userid` = $userid AND `episodeid` = $episodeid");
+		$i = gfDBQuery("SELECT `id` FROM `reviews` WHERE `userid` = $userid AND `episodeid` = $episodeid");
 		
-		if ( $DB->get_num_rows()>0 )
+		if ( gfDBGetNumRows($i)>0 )
 			return true;
 		
 		return false;
 	}
 	
 	private function getReviews($id) {
-		global $DB, $auth;
-		
-		if ( $auth->getMode() == 'reviewer' ) {
-			$userid = $auth->get_userdata('userid');
-			$DB->query("SELECT r.*, u.`username` 
+		if ( gfGetAuth()->getMode() == 'reviewer' ) {
+			$userid = gfGetAuth()->get_userdata('userid');
+			$i = gfDBQuery("SELECT r.*, u.`username` 
 					FROM `reviews` r 
 						JOIN `users` u 
 							ON r.`userid` = u.`id` 
 					WHERE r.`episodeid` = $id AND r.`userid` = $userid 
 					ORDER BY r.`date`");
 		} else {		
-			$DB->query("SELECT r.*, u.`username` FROM `reviews` r JOIN `users` u ON r.`userid` = u.`id` WHERE r.`episodeid` = $id ORDER BY r.`date`");
+			$i = gfDBQuery("SELECT r.*, u.`username` FROM `reviews` r JOIN `users` u ON r.`userid` = u.`id` WHERE r.`episodeid` = $id ORDER BY r.`date`");
 		}
 		
 		$content = '';
 		
 		$ratings = array();
 		
-		while ( $result = $DB->get_result() ) {
+		while ( $result = gfDBGetResult($i) ) {
 			$content .= '<div class="review" id="review-'.$result['id'].'">'.$this->reviewEditLink($result['id'], $result['userid']).'
 	<p class="info">Written by <a href="?p=user&amp;id='.$result['userid'].'" style="font-weight: bold;">'.$result['username'].'</a> on '.$this->timeStamp($result['date']).'.</p>
 	<table class="ratings" cellspacing="1">
@@ -438,14 +422,14 @@ class PageEpisode extends Page {
 			<th>Overall rating:</th><td>'.$this->renderRating($result['rating']).'</td>
 		</tr>
 ';
-			$DB->query("SELECT r.*, t.`name`
+			$j = gfDBQuery("SELECT r.*, t.`name`
 				FROM `ratings` r
 					JOIN `ratingtypes` t
 						ON r.`ratingtype` = t.`id`
 				WHERE r.`reviewid` = ".$result['id']."
-				ORDER BY r.`ratingtype`", 10);
+				ORDER BY r.`ratingtype`");
 			
-			while ( $rating = $DB->get_result(10) ) {
+			while ( $rating = gfDBGetResult($j) ) {
 				$content .= '		<tr>
 			<th>'.$rating['name'].':</th><td>'.$this->renderRating($rating['rating']).'</td>
 		</tr>
@@ -458,12 +442,12 @@ class PageEpisode extends Page {
 				$ratings[$rating['ratingtype']]['ratings'][] = $rating['rating'];
 			}
 			
-			$DB->query("SELECT `rating` FROM `reviewratings` WHERE `reviewid` = ".$result['id'], 10);
+			$j = gfDBQuery("SELECT `rating` FROM `reviewratings` WHERE `reviewid` = ".$result['id']);
 			$reviewratings = array(1 => 0, -1 => 0);
 			$canrate = false;
-			if ( $auth->isLoggedin() )
+			if ( gfGetAuth()->isLoggedin() )
 				$canrate = true;
-			while ( $reviewrating = $DB->get_result(10) )
+			while ( $reviewrating = gfDBGetResult($j) )
 				$reviewratings[$reviewrating['rating']]++;
 			$content .= '	</table>
 	<div class="content">'.$this->renderContent($result['content']).'</div>
