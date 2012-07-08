@@ -1,6 +1,6 @@
 <?php
 
-class page {
+abstract class Page {
 	protected $content;
 	protected $title;
 	protected $ratingColours = array(
@@ -16,11 +16,17 @@ class page {
 		9 => '#00dd00'
 	);
 	
-	function get_content() {
+	public function __construct ( ) {
+		$this->render();
+	}
+	
+	abstract protected function render();
+	
+	function getContent() {
 		return $this->content;
 	}
 	
-	function get_title() {
+	function getTitle() {
 		return $this->title;
 	}
 	
@@ -115,7 +121,8 @@ class page {
 		return '';
 	}
 	
-	protected function radioChecked($dataArray, $id, $checkAgainst, $isDefault=false) {
+	protected function radioChecked($dataArray, $id, $checkAgainst,
+			$isDefault=false) {
 		$data = $this->postData($dataArray, $id);
 		if ( $data == '' ) {
 			if ( $isDefault )
