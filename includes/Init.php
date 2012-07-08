@@ -1,14 +1,12 @@
 <?php
 
+require('includes/GlobalVariables.php')
+
 require('config.php');
 
 require('includes/Database.php');
 
-$DB = new db_driver($dbHost, $dbName, $dbUser, $dbPass);
-
-$DB->connect();
-
-$DB->query("SET NAMES UTF8");
+require('includes/GlobalFunctions.php');
 
 require('includes/Authentication.php');
 

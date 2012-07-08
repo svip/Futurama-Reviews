@@ -8,7 +8,7 @@ class Database {
 			'pass' => '',
 	);
 	
-	private $con_id 	= '';
+	private $con_id = '';
 	private $query_array = array();
 	private $id_array = array();
 	private $result = array();
@@ -21,6 +21,8 @@ class Database {
 		$this->sql['pass'] = $dbpass;
 		
 		$this->connect();
+		
+		$this->query("SET NAMES UTF8");
 	}
 	
 	/**
