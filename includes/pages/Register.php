@@ -21,8 +21,6 @@ class PageRegister extends Page {
 	}
 	
 	private function handleRegisterPost() {
-		global $DB, $auth;
-		
 		$username = addslashes($_POST['username']);
 		$password1 = $_POST['password1'];
 		$password2 = $_POST['password2'];
@@ -57,9 +55,9 @@ class PageRegister extends Page {
 		if ( $this->hasPostErrors() )
 			return;
 		
-		$DB->query("SELECT `id` FROM `users` WHERE LOWER(`username`) = '".strtolower($username)."'");
+		$i = gfDBQuery("SELECT `id` FROM `users` WHERE LOWER(`username`) = '".strtolower($username)."'");
 		
-		if ( $DB->get_num_rows() > 0 )
+		if ( gfDBGetNumRows($i) > 0 )
 			$this->postErrors['username'] = 'Username already taken.';
 		
 		if ( $this->hasPostErrors() )
@@ -67,19 +65,19 @@ class PageRegister extends Page {
 		
 		$password = md5($password1);
 		
-		$DB->query("INSERT INTO `users`
+		gfDBQuery("INSERT INTO `users`
 				SET	`username` = '$username', `password` = '$password',
 					`joindate` = ".time().", `reviewer` = 0, `reviewsdone` = 0");
 		
-		if ( !$auth->verifyLoginCombo($username, $password, true) )
+		if ( !gfGetAuth()->verifyLoginCombo($username, $password, true) )
 			$this->postErrors['system'] = 'An error occurred during registration.';
 		
 		if ( $this->hasPostErrors() )
 			return;
 		
-		$auth->performLogin($username, $password, true);
+		gfGetAuth()->performLogin($username, $password, true);
 		
-		header("Location: /");			
+		header("Location: /");
 	}
 	
 	private function createForm($errors = array(), $data = array()) {
