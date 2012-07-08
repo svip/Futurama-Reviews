@@ -15,7 +15,7 @@ require('includes/GlobalFunctions.php');
 
 require('includes/Authentication.php');
 
-$page = $_REQUEST['p'];
+$page = gfGetPageName();
 
 require('includes/Page.php');
 
