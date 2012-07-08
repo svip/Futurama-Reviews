@@ -6,9 +6,7 @@ if ( !defined('REVIEWS') )
 class PageSetmode extends Page {
 	
 	protected function render ( ) {
-		global $auth;
-		
-		$auth->setMode($_GET['mode']);
+		gfGetAuth()->setMode($_GET['mode']);
 		
 		header('Location: '.$_SERVER['HTTP_REFERER']);
 	}
