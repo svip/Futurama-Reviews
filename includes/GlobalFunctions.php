@@ -132,10 +132,12 @@ function gfDBQuery ( $query, $split=false ) {
 	global $DatabaseQuery, $DatabasePrefix;
 	$DB = gfGetDB();
 	$i = $DatabaseQuery;
+	/*
 	// only add the prefix to table names, table names *never*
 	// has underscores in them, while fieldnames *always* has
 	// underscores in them.
 	$query = preg_replace('@`([a-z]+?)`@is', "`$DatabasePrefix\\1`", $query);
+	*/
 	if ( $split ) {
 		$queries = explode(";--end\n", $query);
 		foreach ( $queries as $subquery ) {
