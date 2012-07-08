@@ -15,8 +15,6 @@ class PageLogin extends Page {
 	}
 	
 	private function handleLogin() {
-		global $auth;
-		
 		$errors = array();
 		
 		$username = addslashes($_POST['username']);
@@ -32,8 +30,8 @@ class PageLogin extends Page {
 			return;
 		}
 		
-		if ( $auth->verifyLoginCombo($username, $password) ) {
-			$auth->performLogin($username, $password);
+		if ( gfGetAuth()->verifyLoginCombo($username, $password) ) {
+			gfGetAuth()->performLogin($username, $password);
 			header('Location: /');
 			return;
 		} else {
