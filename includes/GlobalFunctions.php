@@ -96,7 +96,9 @@ function gfFullLink ( $page=null, $subpages=null, $bookmark=null,
 	return gfRawMsg('http://$1$2', $SiteDomain, $link);
 }
 
-function gfRedirect ( $url ) {
+function gfRedirect ( $url=null ) {
+	if ( is_null($url) )
+		$url = gfLink();
 	$url = preg_replace('/Location\: ?/i', '', $url);
 	$url = str_replace('&amp;', '&', $url);
 	header ( 'Location: ' . $url );
