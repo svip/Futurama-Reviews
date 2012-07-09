@@ -2,14 +2,51 @@
 
 class Output {
 
-	public static function Panel ( ) {
+	public static function CreatePanel ( ) {
+		$menu = array (
+			array('Index', gfLink()),
+			array('FAQ', gfLink('faq'))
+		);		
 		if ( gfGetAuth()->isLoggedIn()) {
-			return '<a href="/">Index</a> &middot; <a href="?p=faq">FAQ</a> &middot; <a href="?p=logout">Log out</a><br />
-<span class="modes">Set mode: <a href="?p=setmode&amp;mode=reviewer">Reviewer</a> &middot; <a href="?p=setmode&amp;mode=noratings">No ratings</a> &middot; <a href="?p=setmode&amp;mode=default">Default</a></span>';
+			$menu[] = array('Log out', gfLink('logout'));
+			$modes = array(
+				array('Reviewer',
+					gfLink('setmode', array('mode'=>'reviewer'))),
+				array('No ratings',
+					gfLink('setmode', array('mode'=>'noratings'))),
+				array('Default',
+					gfLink('setmode', array('mode'=>'default')))
+			);
 		} else {
-			return '<a href="/">Index</a> &middot; <a href="?p=faq">FAQ</a> &middot; <a href="?p=login">Log in</a> &middot; <a href="?p=register">Register</a><br />
-<span class="modes">Set mode: <a href="?p=setmode&amp;mode=noratings">No ratings</a> &middot; <a href="?p=setmode&amp;mode=default">Default</a></span>';
+			$menu[] = array('Log in', gfLink('login'));
+			$menu[] = array('Register', gfLink('register'));
+			$modes = array(
+				array('No ratings',
+					gfLink('setmode', array('mode'=>'noratings'))),
+				array('Default',
+					gfLink('setmode', array('mode'=>'default')))
+			);
 		}
+		$tmp = '';
+		foreach ( $menu as $item ) {
+			if ( $tmp != '' )
+				$tmp .= ' &middot; ';
+			$tmp .= gfRawMsg('<a href="$1">$2</a>',
+				$item[1], $item[0]
+			);
+		}
+		$span = '';
+		foreach ( $modes as $item ) {
+			if ( $span != '' )
+				$span .= ' &middot; ';
+			$span .= gfRawMsg('<a href="$1">$2</a>',
+				$item[1], $item[0]
+			);
+		}
+		return gfRawMsg('$1<br />
+<span class="modes">Set mode: $2</span>',
+			$tmp, $span
+		);
 	}
 
 	public static function RenderPage( $page ) {
@@ -24,7 +61,7 @@ class Output {
 			array(
 				$page->getContent(),
 				$page->getTitle(),
-				self::Panel(),
+				self::CreatePanel(),
 			),
 			$template
 		);
