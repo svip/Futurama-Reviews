@@ -12,7 +12,7 @@ class PageEditreview extends Page {
 		$id = $_GET['id'];
 		
 		if ( !is_numeric($id) || $id < 1 ) {
-			header('Location: /');
+			gfRedirect(gfLink());
 			return;
 		}
 		
@@ -36,7 +36,7 @@ class PageEditreview extends Page {
 		$episodeid = $result['episodeid'];
 		
 		if ( $result['userid'] != gfGetAuth()->get_userdata('userid') ) {
-			header('Location: /');
+			gfRedirect(gfLink());
 			return;
 		}
 		
@@ -45,7 +45,9 @@ class PageEditreview extends Page {
 		
 		if ( !$content ) 
 			$this->postErrors['content'] = 'Missing field.';
-		if ( !$overallrating || (!is_numeric($overallrating) && $overallrating !== false ) )
+		if ( !$overallrating
+			|| (!is_numeric($overallrating)
+			&& $overallrating !== false ) )
 			$this->postErrors['rating-overall'] = 'Missing field.';
 		
 		$ratingtypes = explode('|', $_POST['typesofratings']);
@@ -118,9 +120,17 @@ class PageEditreview extends Page {
 			$inseason = '0'.$inseason;
 		
 		if ( $result['type'] == 'f' )
-			header('Location: ?p=episode&film='.$this->filmCode($result['season'], $inseason).'#review-'.$id);
+			gfRedirect(gfLink('episode',
+				array('film'=>$this->filmCode($result['season'],
+					$inseason)),
+				'review-'.$id
+			));
 		else
-			header('Location: ?p=episode&episode='.$this->prodCode($result['season'], $inseason).'#review-'.$id);
+			gfRedirect(gfLink('episode',
+				array('episode'=>$this->prodCode($result['season'],
+					$inseason)),
+				'review-'.$id
+			));
 	}
 	
 	private function createForm() {
@@ -131,7 +141,7 @@ class PageEditreview extends Page {
 		$result = gfDBGetResult($i);
 		
 		if ( $result['userid'] != gfGetAuth()->get_userdata('userid') ) {
-			header('Location: /');
+			gfRedirect(gfLink());
 			return;
 		}
 		
@@ -140,7 +150,8 @@ class PageEditreview extends Page {
 			'rating-overall' => $result['rating']
 		);
 		
-		$i = gfDBQuery("SELECT * FROM `ratings` WHERE `reviewid` = $id");
+		$i = gfDBQuery("SELECT * FROM `ratings`
+			WHERE `reviewid` = $id");
 		
 		while ( $result = gfDBGetResult($i) ) {
 			$data['ratingtype-'.$result['ratingtype']] = $result['rating'];
