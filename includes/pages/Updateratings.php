@@ -1,32 +1,26 @@
 <?php
 
 if ( !defined('REVIEWS') )
-	header('Location: ../');
+	gfRedirect();
 
 class PageUpdateratings extends Page {
 	
 	protected function render ( ) {
 		if ( !gfGetAuth()->isAdmin() ) {
-			header('Location: /');
+			gfRedirect();
 			return;
 		}
 		
 		$id = $_GET['id'];
 		
 		if ( !is_numeric($id) || $id < 1 ) {
-			header('Location: /');
+			gfRedirect();
 			return;
 		}
 		
-		$this->id = $id;
-		
 		$this->title = 'Updating ratings...';
 		
-		$this->render();
-	}
-	
-	protected function render ( ) {
-		$episodeid = $this->id;
+		$episodeid = $id;
 		
 		$i = gfDBQuery("SELECT COUNT(`id`) AS amount, 
 					SUM(`rating`) AS total
@@ -47,13 +41,17 @@ class PageUpdateratings extends Page {
 		
 		$result = gfDBGetResult($i);
 		
-		$inseason = $result['inseason'];
-		if ( $inseason < 10 )
-			$inseason = '0'.$inseason;
-		
 		if ( $result['type'] == 'f' )
-			header('Location: ?p=episode&film='.$this->filmCode($result['season'], $inseason));
+			gfRedirect(gfLink('episode',
+				array('film'=>
+					$this->filmCode($result['season'],
+						$result['inseason']))
+			));
 		else
-			header('Location: ?p=episode&episode='.$this->prodCode($result['season'], $inseason));
+			gfRedirect(gfLink('episode',
+				array('episode'=>
+					$this->prodCode($result['season'],
+						$result['inseason']))
+			));
 	}
 }
