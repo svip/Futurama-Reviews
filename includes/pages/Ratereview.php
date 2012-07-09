@@ -15,28 +15,36 @@ class PageRatereview extends Page {
 		
 		// Check for sane input
 		if ( !$id || !is_numeric($id) || $id < 1 || !$rating 
-			|| !in_array($rating, array(1, -1)) || !gfGetAuth()->isLoggedIn() ) {
+			|| !in_array($rating, array(1, -1))
+			|| !gfGetAuth()->isLoggedIn() ) {
 			header('Location: /');
 			return;
 		}
 		
 		$userid = gfGetAuth()->get_userdata('userid');
 		
-		$i = gfDBQuery("SELECT `id` FROM `reviewratings` WHERE `reviewid` = $id AND `userid` = $userid");
+		$i = gfDBQuery("SELECT `id`
+			FROM `reviewratings`
+			WHERE `reviewid` = $id
+				AND `userid` = $userid");
 		
 		if ( gfDBGetNumRows($i) > 0 ) {
 			// already rated, so let's change their rating!
 			
 			$result = gfDBGetResult($i);
 			
-			gfDBQuery("UPDATE `reviewratings` SET `rating` = $rating WHERE `id` = {$result['id']}");
+			gfDBQuery("UPDATE `reviewratings`
+				SET `rating` = $rating
+				WHERE `id` = {$result['id']}");
 		} else {
 			// new rating!
 			
-			gfDBQuery("INSERT INTO `reviewratings` SET `reviewid` = $id, `userid` = $userid, `rating` = $rating");
+			gfDBQuery("INSERT INTO `reviewratings`
+				SET `reviewid` = $id, `userid` = $userid,
+					`rating` = $rating");
 		}
 		
-		header("Location: /?p=episode&review=$id#review-$id");
+		gfRedirect(gfLink('episode', array('review'=>$id), 'review-'.$id));
 	}
 
 }
