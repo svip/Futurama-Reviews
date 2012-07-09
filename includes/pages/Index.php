@@ -49,10 +49,12 @@ class PageIndex extends Page {
 			$n++;
 			if ( $result['season'] > $curseason ) {
 				$curseason = $result['season'];
-				$table .= '		<tr class="season" id="season-'.$result['season'].'">
-			<th>Season '.$result['season'].'</th><th>{{SEASON-'.$result['season'].'-RATING}}</th><th>{{SEASON-'.$result['season'].'-REVIEWS}}</th>
+				$table .= gfRawMsg('		<tr class="season" id="season-$1">
+			<th>Season $1</th><th>{{SEASON-$1-RATING}}</th><th>{{SEASON-$1-REVIEWS}}</th>
 		</tr>
-';
+',
+					$result['season']
+				);
 				$seasonRatings[$result['season']] = array();
 				$seasonReviews[$result['season']] = 0;
 				$seasons++;
@@ -77,10 +79,22 @@ class PageIndex extends Page {
 			$endN = $n;
 			if ( $result['type'] == 'f' )
 				$endN = $n+3;
-			$table .= '		<tr>
-			<td>'.$this->titleLinkRender($result['title'], $result['season'], $result['inseason'], $result['type'], $result['id'], $n, $endN, $episodesCheck).'</td><td>'.(($reviews==0 || $rating==null)?'-':$this->renderPercentageRating($rating)).'</td><td>'.$reviews.' review'.($reviews!=1?'s':'').'</td>
+			$table .= gfRawMsg('		<tr>
+			<td>$1</td><td>$2</td><td>$3</td>
 		</tr>
-';
+',
+				$this->titleLinkRender($result['title'],
+					$result['season'], $result['inseason'],
+					$result['type'], $result['id'], $n, $endN,
+					$episodesCheck),
+				(($reviews==0 || $rating==null)
+					?'-'
+					:$this->renderPercentageRating($rating)),
+				gfRawMsg('$1 review$2',
+					$reviews,
+					($reviews!=1?'s':'')
+				)
+			);
 			
 			if ( $result['type'] == 'f' )
 				$n += 3;
@@ -91,15 +105,23 @@ class PageIndex extends Page {
 			$seasonReviews[$result['season']] += $reviews;
 			$totalReviews += $reviews;
 		}
-		$table .= '		<tr class="season">
-			<th>Total</th><th>'.(count($totalRatings)==0?'-':$this->renderPercentageRating(array_sum($totalRatings)/count($totalRatings))).'</th><th>'.$totalReviews.' reviews</th>
+		$table .= gfRawMsg('		<tr class="season">
+			<th>Total</th><th>$1</th><th>$2 reviews</th>
 		</tr>
 	</tbody>
-</table>';
+</table>',
+			(count($totalRatings) == 0
+				?'-':$this->renderPercentageRating(
+					array_sum($totalRatings)
+					/count($totalRatings))
+			),
+			$totalReviews
+		);
 
 		$toc = "<ul>\n";
 		for ( $i = 1; $i <= $seasons; $i++ ) {
-			$toc .= '<li><a href="#season-'.$i.'">Season '.$i."</a></li>\n";
+			$toc .= gfRawMsg('<li><a href="#season-$1">Season $1</a></li>
+', $i);
 		}
 		$toc .= "</ul>\n";
 		$table = str_replace('{{TOC}}', $toc, $table);
@@ -113,8 +135,13 @@ class PageIndex extends Page {
 			else
 				$seasonRating = '-';
 			$table = str_replace(
-				array('{{SEASON-'.$season.'-RATING}}', '{{SEASON-'.$season.'-REVIEWS}}'),
-				array($seasonRating, $seasonReviews[$season].' reviews'),
+				array(
+					'{{SEASON-'.$season.'-RATING}}',
+					'{{SEASON-'.$season.'-REVIEWS}}'
+				),
+				array(
+					$seasonRating, 
+					$seasonReviews[$season].' reviews'),
 				$table
 			);
 		}
@@ -130,40 +157,32 @@ class PageIndex extends Page {
 
 	private function titleLinkRender($title, $season, $inseason,
 			$type, $id, $no, $endNo, $episodesCheck) {
-		$format = '{{NTH}} {{LINK}}';
+		$format = '$2 $1';
 		if ( count($episodesCheck) > 0
 			&& isset($episodesCheck[$id]) ) {
-			$format = '{{NTH}} * {{LINK}}';
+			$format = '$2 * $1';
 		} elseif ( count($episodesCheck) > 0 ) {
-			$format = '{{NTH}} <b>{{LINK}}</b>';
+			$format = '$2 <b>$1</b>';
 		} else {
-			$format = '{{NTH}} {{LINK}}';
+			$format = '$2 $1';
 		}
 		$link = '';
 		if ( $type == 'f' ) {
-			$link = '<a href="?p=episode&amp;film='.
-				$season.'-'.(floor($inseason/4)+1).
-				'"><i>'.$title.'</i></a>';
+			$link = gfRawMsg('<a href="$1"><i>$2</i></a>',
+				gfLink('episode', array('film'=>
+					$this->filmCode($season, $inseason))),
+				$title
+			);
 			$nth = $no . '-' . $endNo;
 		} else {
-			if ( $inseason < 10 )
-				$inseason = '0'.$inseason;
-			$id = $season.'ACV'.$inseason;
-			$link = '<a href="?p=episode&amp;episode='.
-				$id.'">'.$title.'</a>';
+			$link = gfRawMsg('<a href="$1">$2</a>',
+				gfLink('episode', array('episode'=>
+					$this->prodCode($season, $inseason))),
+				$title
+			);
 			$nth = $no;
 		}
-		return str_replace(
-			array(
-				'{{LINK}}',
-				'{{NTH}}',
-			),
-			array(
-				$link,
-				$nth,
-			),
-			$format
-		);
+		return gfRawMsg($format, $link, $nth);
 	}
 	
 }
