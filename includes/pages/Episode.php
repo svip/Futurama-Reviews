@@ -15,30 +15,30 @@ class PageEpisode extends Page {
 		<th>Previous</th><th>Next</th>
 	</tr>
 	<tr>
-		<td>{{PREVIOUS}}</td><td>{{NEXT}}</td>
+		<td>$1</td><td>$2</td>
 	</tr>
 </table>';
 	private $episodeFormat = '<table class="infobox" cellspacing="1">
 	<tr>
-		<th>Production number</th><td>{{PRODUCTIONNUMBER}}</td>
+		<th>Production number</th><td>$1</td>
 	</tr>
 	<tr>
-		<th>Reviews written</th><td>{{REVIEWS}}</td>
+		<th>Reviews written</th><td>$2</td>
 	</tr>
 	<tr>
-		<th>Overall rating{{UPDATERATING}}</th><td>{{RATING}}</td>
+		<th>Overall rating$4</th><td>$3</td>
 	</tr>
 	{{MISCRATINGS}}
 </table>';
 	private $filmFormat = '<table class="infobox" cellspacing="1">
 	<tr>
-		<th>Film number</th><td>{{FILM}}</td>
+		<th>Film number</th><td>$1</td>
 	</tr>
 	<tr>
-		<th>Reviews written</th><td>{{REVIEWS}}</td>
+		<th>Reviews written</th><td>$2</td>
 	</tr>
 	<tr>
-		<th>Overall rating{{UPDATERATING}}</th><td>{{RATING}}</td>
+		<th>Overall rating$4</th><td>$3</td>
 	</tr>
 	{{MISCRATINGS}}
 </table>';
@@ -71,7 +71,10 @@ class PageEpisode extends Page {
 		$season = $episode[0]+0;
 		$inseason = $episode[1]+0;
 		
-		$i = gfDBQuery("SELECT `id` FROM `episodes` WHERE `season` = $season AND `inseason` = $inseason");
+		$i = gfDBQuery("SELECT `id`
+			FROM `episodes`
+			WHERE `season` = $season
+				AND `inseason` = $inseason");
 		
 		if ( gfDBGetNumRows($i) === 0 )
 			return null;
@@ -104,7 +107,10 @@ class PageEpisode extends Page {
 		$season = $film[0]+0;
 		$inseason = ($film[1]-1)*4+1;
 		
-		$i = gfDBQuery("SELECT `id` FROM `episodes` WHERE `season` = $season AND `inseason` = $inseason");
+		$i = gfDBQuery("SELECT `id`
+			FROM `episodes`
+			WHERE `season` = $season
+				AND `inseason` = $inseason");
 		
 		if ( gfDBGetNumRows($i) === 0 )
 			return null;
@@ -159,7 +165,7 @@ class PageEpisode extends Page {
 	private function handleReviewPost() {
 		$id = $this->getId();
 		if ( $id == null ) {
-			header('Location: /');
+			gfRedirect(gfLink());
 			return;
 		}
 			
@@ -189,8 +195,10 @@ class PageEpisode extends Page {
 		
 		$userid = gfGetAuth()->get_userdata('userid');
 		
-		$i = gfDBQuery("INSERT INTO `reviews` SET `episodeid` = $id, `userid` = $userid,
-			`content` = '$content', `rating` = $overallrating, `date` = ".time());
+		$i = gfDBQuery("INSERT INTO `reviews`
+			SET `episodeid` = $id, `userid` = $userid,
+			`content` = '$content', `rating` = $overallrating,
+			`date` = ".time());
 		
 		$reviewid = gfDBGetInsertId($i);
 		
@@ -204,8 +212,11 @@ class PageEpisode extends Page {
 					`ratingtype` = $ratingtype, `rating` = $rating");
 		}
 		
-		$i = gfDBQuery("SELECT COUNT(`id`) AS amount, SUM(`rating`) AS total
-				FROM `reviews` WHERE `episodeid` = $id AND `rating` != -1");
+		$i = gfDBQuery("SELECT COUNT(`id`) AS amount,
+				SUM(`rating`) AS total
+			FROM `reviews`
+			WHERE `episodeid` = $id 
+				AND `rating` != -1");
 		
 		$result = gfDBGetResult($i);
 		
@@ -247,9 +258,19 @@ class PageEpisode extends Page {
 		if ( gfDBGetNumRows($i) > 0 ) {
 			$result = gfDBGetResult($i);
 			if ( $result['type'] == 'e' )
-				$previous = '<a href="/?p=episode&amp;episode='.$this->prodCode($result['season'], $result['inseason']).'">'.$result['title'].'</a>';
+				$previous = gfRawMsg('<a href="$1">$2</a>',
+					gfLink('episode',
+						array('episode'=>$this->prodCode($result['season'], $result['inseason']))
+					),
+					$result['title']
+				);
 			else
-				$previous = '<a href="/?p=episode&amp;film='.$this->filmCode($result['season'], $result['inseason']).'"><i>'.$result['title'].'</i></a>';
+				$previous = gfRawMsg('<a href="$1">$2</a>',
+					gfLink('episode',
+						array('film'=>$this->filmCode($result['season'], $result['inseason']))
+					),
+					$result['title']
+				);
 		}
 		
 		$i = gfDBQuery("SELECT `season`, `inseason`, `title`, `type`
@@ -271,22 +292,22 @@ class PageEpisode extends Page {
 		if ( gfDBGetNumRows($i) > 0 ) {
 			$result = gfDBGetResult($i);
 			if ( $result['type'] == 'e' )
-				$next = '<a href="/?p=episode&amp;episode='.$this->prodCode($result['season'], $result['inseason']).'">'.$result['title'].'</a>';
+				$next = gfRawMsg('<a href="$1">$2</a>',
+					gfLink('episode',
+						array('episode'=>$this->prodCode($result['season'], $result['inseason']))
+					),
+					$result['title']
+				);
 			else
-				$next = '<a href="/?p=episode&amp;film='.$this->filmCode($result['season'], $result['inseason']).'"><i>'.$result['title'].'</i></a>';
+				$next = gfRawMsg('<a href="$1">$2</a>',
+					gfLink('episode',
+						array('film'=>$this->filmCode($result['season'], $result['inseason']))
+					),
+					$result['title']
+				);
 		}
 		
-		return str_replace (
-			array (
-				'{{PREVIOUS}}',
-				'{{NEXT}}',
-			),
-			array (
-				$previous,
-				$next,
-			),
-			$this->navigationFormat
-		);
+		return gfRawMsg($this->navigationFormat, $previous, $next);
 	}
 	
 	protected function prodCode ( $season, $inseason ) {
@@ -302,15 +323,15 @@ class PageEpisode extends Page {
 	private function makePage() {
 		$id = $this->getId();
 		if ( $id == null ) {
-			header('Location: /');
+			gfRedirect(gfLink());
 			return;
 		}
 		
 		$i = gfDBQuery("SELECT * FROM `episodes` WHERE `id` = $id");
 		
 		if ( gfDBGetNumRows($i) === 0 ) {
-			header('Location: /');
-			return;		
+			gfRedirect(gfLink());
+			return;
 		}
 		
 		$result = gfDBGetResult($i);
@@ -325,43 +346,33 @@ class PageEpisode extends Page {
 			$inseason = $result['inseason'];
 			if ( $inseason < 10 )
 				$inseason = '0'.$inseason;
-			$content .= str_replace(
-				array(
-					'{{PRODUCTIONNUMBER}}',
-					'{{REVIEWS}}',
-					'{{RATING}}',
-					'{{UPDATERATING}}',
-				),
-				array(
-					$result['season'].'ACV'.$inseason,
-					$result['reviews'],
-					$this->renderPercentageRating($result['rating']),
-					(gfGetAuth()->isAdmin()
-						?' (<a href="./?p=updateratings&amp;id='.$id.'">Update</a>)'
-						:''
-					),
-				),
-				$this->episodeFormat
+			$content .= gfRawMsg($this->episodeFormat,
+				$result['season'].'ACV'.$inseason,
+				$result['reviews'],
+				$this->renderPercentageRating($result['rating']),
+				(gfGetAuth()->isAdmin()
+					?gfRawMsg(' (<a href="$1">Update</a>)',
+						gfLink('updateratings',
+							array('id'=>$id)
+						)
+					)
+					:''
+				)
 			);
 		} else {
 			$t = explode('-', $_GET['film']);
-			$content .= str_replace(
-				array(
-					'{{FILM}}',
-					'{{REVIEWS}}',
-					'{{RATING}}',
-					'{{UPDATERATING}}',
-				),
-				array(
-					$t[1],
-					$result['reviews'],
-					$this->renderPercentageRating($result['rating']),
-					(gfGetAuth()->isAdmin()
-						?' (<a href="./?p=updateratings&amp;id='.$id.'">Update</a>)'
-						:''
-					),
-				),
-				$this->filmFormat
+			$content .= gfRawMsg($this->filmFormat,
+				$t[1],
+				$result['reviews'],
+				$this->renderPercentageRating($result['rating']),
+				(gfGetAuth()->isAdmin()
+					?gfRawMsg(' (<a href="$1">Update</a>)',
+						gfLink('updateratings',
+							array('id'=>$id)
+						)
+					)
+					:''
+				)
 			);
 		}
 		
@@ -370,10 +381,15 @@ class PageEpisode extends Page {
 		$ratingscontent = '';
 		
 		foreach($this->ratings as $ratingtype) {
-			$ratingscontent .= '	<tr>
-		<th>'.$ratingtype['name'].'</th><td>'.$this->renderPercentageRating((array_sum($ratingtype['ratings'])/count($ratingtype['ratings']))*10).'</td>
+			$ratingscontent .= gfRawMsg('	<tr>
+		<th>$1</th><td>$2</td>
 	</tr>
-';
+',
+				$ratingtype['name'],
+				$this->renderPercentageRating(
+					(array_sum($ratingtype['ratings'])
+						/count($ratingtype['ratings']))*10)
+			);
 		}
 		
 		$content = str_replace('{{MISCRATINGS}}', $ratingscontent, $content);
@@ -407,7 +423,12 @@ class PageEpisode extends Page {
 					WHERE r.`episodeid` = $id AND r.`userid` = $userid 
 					ORDER BY r.`date`");
 		} else {		
-			$i = gfDBQuery("SELECT r.*, u.`username` FROM `reviews` r JOIN `users` u ON r.`userid` = u.`id` WHERE r.`episodeid` = $id ORDER BY r.`date`");
+			$i = gfDBQuery("SELECT r.*, u.`username`
+				FROM `reviews` r
+					JOIN `users` u
+						ON r.`userid` = u.`id`
+				WHERE r.`episodeid` = $id
+				ORDER BY r.`date`");
 		}
 		
 		$content = '';
@@ -415,13 +436,21 @@ class PageEpisode extends Page {
 		$ratings = array();
 		
 		while ( $result = gfDBGetResult($i) ) {
-			$content .= '<div class="review" id="review-'.$result['id'].'">'.$this->reviewEditLink($result['id'], $result['userid']).'
-	<p class="info">Written by <a href="?p=user&amp;id='.$result['userid'].'" style="font-weight: bold;">'.$result['username'].'</a> on '.$this->timeStamp($result['date']).'.</p>
+			$content .= gfRawMsg('<div class="review" id="review-$1">$2
+	<p class="info">Written by <a href="$3" style="font-weight: bold;">$4</a> on $5.</p>
 	<table class="ratings" cellspacing="1">
 		<tr>
-			<th>Overall rating:</th><td>'.$this->renderRating($result['rating']).'</td>
+			<th>Overall rating:</th><td>$6</td>
 		</tr>
-';
+',
+				$result['id'],
+				$this->reviewEditLink($result['id'],
+					$result['userid']),
+				gfLink('user', array('id'=>$result['userid'])),
+				$result['username'],
+				$this->timeStamp($result['date']),
+				$this->renderRating($result['rating'])
+			);
 			$j = gfDBQuery("SELECT r.*, t.`name`
 				FROM `ratings` r
 					JOIN `ratingtypes` t
@@ -430,10 +459,13 @@ class PageEpisode extends Page {
 				ORDER BY r.`ratingtype`");
 			
 			while ( $rating = gfDBGetResult($j) ) {
-				$content .= '		<tr>
-			<th>'.$rating['name'].':</th><td>'.$this->renderRating($rating['rating']).'</td>
+				$content .= gfRawMsg('		<tr>
+			<th>$1:</th><td>$2</td>
 		</tr>
-';
+',
+					$rating['name'],
+					$this->renderRating($rating['rating'])
+				);
 				if ( !isset($ratings[$rating['ratingtype']]) )
 					$ratings[$rating['ratingtype']] = array(
 						'name'    => $rating['name'],
@@ -442,19 +474,35 @@ class PageEpisode extends Page {
 				$ratings[$rating['ratingtype']]['ratings'][] = $rating['rating'];
 			}
 			
-			$j = gfDBQuery("SELECT `rating` FROM `reviewratings` WHERE `reviewid` = ".$result['id']);
+			$j = gfDBQuery("SELECT `rating`
+				FROM `reviewratings`
+				WHERE `reviewid` = ".$result['id']);
 			$reviewratings = array(1 => 0, -1 => 0);
 			$canrate = false;
 			if ( gfGetAuth()->isLoggedin() )
 				$canrate = true;
 			while ( $reviewrating = gfDBGetResult($j) )
 				$reviewratings[$reviewrating['rating']]++;
-			$content .= '	</table>
-	<div class="content">'.$this->renderContent($result['content']).'</div>
-	<div class="reviewrating"><span class="rating-approval">'.$reviewratings[1].' approves</span> and <span class="rating-disapproval">'.$reviewratings[-1].' disapproves</span> of this review'.($canrate?' (<a href="?p=ratereview&amp;id='.$result['id'].'&amp;rating=1">Approve</a> &middot; <a href="?p=ratereview&amp;id='.$result['id'].'&amp;rating=-1">Disapprove</a>)':'').'</div>
+			$content .= gfRawMsg('	</table>
+	<div class="content">$1</div>
+	<div class="reviewrating"><span class="rating-approval">$2 approves</span> and <span class="rating-disapproval">$3 disapproves</span> of this review$4</div>
 	<div class="clear"></div>
 </div>
-';
+',
+				$this->renderContent($result['content']),
+				$reviewratings[1], $reviewratings[-1],
+				($canrate
+					?gfRawMsg(' (<a href="$1">Approve</a> &middot; <a href="$2">Disapprove</a>)',
+						gfLink('ratereview',
+							array('id'=>$result['id'],
+								'rating'=>'1')),
+						gfLink('ratereview',
+							array('id'=>$result['id'],
+								'rating'=>'-1'))
+					)
+					:''
+				)
+			);
 		}
 		
 		$this->ratings = $ratings;
