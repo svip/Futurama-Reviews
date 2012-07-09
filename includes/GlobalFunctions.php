@@ -51,9 +51,9 @@ function gfLink ( $page=null, $subpages=null, $bookmark=null,
 	$query = '';
 	
 	if ( is_null($page) ) {
-		$link = 'page=';
+		$link = '';
 	} else {
-		$link = 'page='.$page;
+		$link = 'p='.$page;
 		if ( !is_null($subpages) ) {
 			foreach ( $subpages as $var => $value ) {
 				if ( $query != '' ) $query .= '&amp;';
@@ -68,7 +68,7 @@ function gfLink ( $page=null, $subpages=null, $bookmark=null,
 	}
 	if ( $query != '' )
 		$link = "?$link&amp;$query";
-	else
+	elseif ( $link != '' )
 		$link = "?$link";
 	
 	if ( $raw )
