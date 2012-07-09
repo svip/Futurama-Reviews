@@ -46,6 +46,7 @@ function gfRawMsg ( ) {
 function gfLink ( $page=null, $subpages=null, $bookmark=null,
 		$raw=false ) {
 	//global $UsePathInfo, $SiteLocation;
+	global $SiteLocation;
 	
 	$query = '';
 	
