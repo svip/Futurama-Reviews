@@ -62,7 +62,11 @@ abstract class Page {
 			$colour = $this->ratingColours[9];
 			$bold = true;
 		}
-		return '<span style="color:'.$colour.';'.($bold?' font-weight:bold;':'').'">'.round($rating,0).'%</span>';
+		return gfRawMsg('<span style="color:$1;$2">$3%</span>',
+			$colour,
+			($bold?' font-weight:bold;':''),
+			round($rating,0)
+		);
 	}
 	
 	protected function renderRating($rating) {
@@ -95,12 +99,18 @@ abstract class Page {
 			$colour = $this->ratingColours[9];
 			$bold = true;
 		}
-		return '<span style="color:'.$colour.';'.($bold?' font-weight:bold;':'').'">'.$rating.'</span>';
+		return gfRawMsg('<span style="color:$1;$2">$3</span>',
+			$colour,
+			($bold?' font-weight:bold;':''),
+			$rating
+		);
 	}
 	
 	protected function errorMsg($errors, $msg) {
 		if ( isset($errors[$msg]) )
-			return ' <span class="error">'.$errors[$msg].'</span>';
+			return gfRawMsg(' <span class="error">$1</span>',
+				$errors[$msg]
+			);
 		return '';
 	}
 	
@@ -110,7 +120,7 @@ abstract class Page {
 			$data = stripslashes($dataArray[$id]);
 		if ( $data != null )
 			return ' value="'.$data.'"';
-		return '';		
+		return '';
 	}
 	
 	protected function postData($dataArray, $id) {
@@ -136,68 +146,97 @@ abstract class Page {
 			return '';
 	}
 	
-	protected function reviewForm($errors = array(), $data = array(), $mode = 'create') {
+	protected function reviewForm($errors = array(), $data = array(),
+			$mode = 'create') {
 		$submitType = 'submit-review';
 		$legend = 'Create a review';
 		if ( $mode == 'edit' ) {
 			$submitType = 'submit-editreview';
 			$legend = 'Edit a review';
 		}
-		return '<form method="post">
+		return gfRawMsg('<form method="post">
 	<fieldset class="review">
-		<legend>'.$legend.'</legend>
+		<legend>$1</legend>
 		<fieldset>
 			<legend>The review</legend>
-			<label for="content">Textual:'.$this->errorMsg($errors, 'content').'</label>
-			<textarea cols="50" rows="15" name="content" id="content">'.$this->postData($data, 'content').'</textarea>
-			<input type="submit" name="'.$submitType.'" value="Submit" />
+			<label for="content">Textual:$2</label>
+			<textarea cols="50" rows="15" name="content" id="content">$3</textarea>
+			<input type="submit" name="$4" value="Submit" />
 		</fieldset>
 		<fieldset class="ratings">
 			<legend>Ratings</legend>
 			<div class="ratingcontainer">
 			<div>
-			<label for="rating-overall-1">Overall:'.$this->errorMsg($errors, 'rating-overall').'</label>
-			'.$this->radio('rating-overall', 1, 10, null, $data).'
+			<label for="rating-overall-1">Overall:$5</label>
+			$6
 			</div>
-			'.$this->otherFormRatings($errors, $data).'
+			$7
 			</div>
 		</fieldset>
 	</fieldset>
-</form>';
+</form>',
+			$legend,
+			$this->errorMsg($errors, 'content'),
+			$this->postData($data, 'content'),
+			$submitType,
+			$this->errorMsg($errors, 'rating-overall'),
+			$this->radio('rating-overall', 1, 10, null, $data),
+			$this->otherFormRatings($errors, $data)
+		);
 	}
 	
-	protected function radio($id, $start, $end, $nullText, $data=array()) {
+	protected function radio ( $id, $start, $end, $nullText, 
+			$data=array() ) {
 		$div = '<div class="radiobuttons">';
 		for ( $i=$start; $i<=$end; $i++ ) {
-			$div .= '<input type="radio" name="'.$id.'" id="'.$id.'-'.$i.'" value="'.$i.'"'.$this->radioChecked($data, $id, $i).' /> <label for="'.$id.'-'.$i.'">'.$i.'</label> ';
+			$div .= gfRawMsg('<input type="radio" name="$1" id="$1-$2" value="$2"$3 /> <label for="$1-$2">$2</label> ',
+				$id, $i,
+				$this->radioChecked($data, $id, $i)
+			);
 			if ( $end/2 == $i )
 				$div .= '<br />';
 		}
-		$div .= '<br /><input type="radio" name="'.$id.'" id="'.$id.'-false" value="false"'.$this->radioChecked($data, $id, 'false', ($nullText == null)).' /> <label for="'.$id.'-false">No opinion/don\'t know</label>';
+		$div .= gfRawMsg('<br /><input type="radio" name="$1" id="$1-false" value="false"$2 /> <label for="$1-false">$3</label>',
+			$id,
+			$this->radioChecked($data, $id, 'false',
+				($nullText == null)),
+			"No opinion/don't know"
+		);
 		if ( $nullText != null ) {
-			$div .= '<hr /><input type="radio" name="'.$id.'" id="'.$id.'-null" value="null"'.$this->radioChecked($data, $id, 'null', ($nullText != null)).' /> <label for="'.$id.'-null">'.$nullText.'</label>';
+			$div .= gfRawMsg('<hr /><input type="radio" name="$1" id="$1-null" value="null"$2 /> <label for="$1-null">$3</label>',
+				$id,
+				$this->radioChecked($data, $id, 'null',
+					($nullText != null)),
+				$nullText
+			);
 		}
 		$div .= '</div>';
 		return $div;
 	}
 	
-	protected function otherFormRatings($errors = array(),
-			$data = array()) {
-		
+	protected function otherFormRatings ( $errors = array(),
+			$data = array() ) {
 		$i = gfDBQuery("SELECT * FROM `ratingtypes`");
 		
 		$content = '';
 		$types = '';
 		
 		while ( $result = gfDBGetResult($i) ) {
-			$content .= '			<div>
-				<label for="ratingtype-'.$result['id'].'-1">'.$result['name'].':'.$this->errorMsg($errors, 'ratingtype-'.$result['id']).'</label>
-				'.$this->radio('ratingtype-'.$result['id'], 1, 10, $result['nullstring'], $data).'
+			$content .= gfRawMsg('			<div>
+				<label for="ratingtype-$1-1">$2:$3</label>
+				$4
 				</div>
-';
+',
+				$result['id'], $result['name'],
+				$this->errorMsg($errors, 'ratingtype-'.$result['id']),
+				$this->radio('ratingtype-'.$result['id'], 1, 10,
+					$result['nullstring'], $data)
+			);
 			$types .= '|'.$result['id'];
 		}
-		$content .= '<input type="hidden" name="typesofratings" value="'.$types.'" />';
+		$content .= gfRawMsg('<input type="hidden" name="typesofratings" value="$1" />',
+			$types
+		);
 		
 		return $content;
 	}
@@ -206,8 +245,10 @@ abstract class Page {
 		if ( gfGetAuth()->get_userdata('userid') != $userid )
 			return '';
 		
-		return '
-	<p class="editlink"><a href="?p=editreview&amp;id='.$id.'">Edit your review</a></p>';
+		return gfRawMsg('
+	<p class="editlink"><a href="$1">Edit your review</a></p>',
+			gfLink('editreview', array('id'=>$id))
+		);
 	}
 	
 	protected function renderContent($content) {
