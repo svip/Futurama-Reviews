@@ -1,7 +1,7 @@
 <?php
 
 if ( !defined('REVIEWS') )
-	header('Location: ../');
+	gfRedirect();
 
 class PageIndex extends Page {
 	

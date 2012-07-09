@@ -1,14 +1,14 @@
 <?php
 
 if ( !defined('REVIEWS') )
-	header('Location: ../');
+	gfRedirect();
 
 class PageSetmode extends Page {
 	
 	protected function render ( ) {
 		gfGetAuth()->setMode($_GET['mode']);
 		
-		header('Location: '.$_SERVER['HTTP_REFERER']);
+		gfRedirect($_SERVER['HTTP_REFERER']);
 	}
 	
 }

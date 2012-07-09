@@ -1,7 +1,7 @@
 <?php
 
 if ( !defined('REVIEWS') )
-	header('Location: ../');
+	gfRedirect();
 
 class PageRatereview extends Page {
 
@@ -17,7 +17,7 @@ class PageRatereview extends Page {
 		if ( !$id || !is_numeric($id) || $id < 1 || !$rating 
 			|| !in_array($rating, array(1, -1))
 			|| !gfGetAuth()->isLoggedIn() ) {
-			header('Location: /');
+			gfRedirect();
 			return;
 		}
 		

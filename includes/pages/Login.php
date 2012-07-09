@@ -1,7 +1,7 @@
 <?php
 
 if ( !defined('REVIEWS') )
-	header('Location: ../');
+	gfRedirect();
 	
 class PageLogin extends Page {
 
@@ -32,7 +32,7 @@ class PageLogin extends Page {
 		
 		if ( gfGetAuth()->verifyLoginCombo($username, $password) ) {
 			gfGetAuth()->performLogin($username, $password);
-			header('Location: /');
+			gfRedirect();
 			return;
 		} else {
 			$this->loginForm(array('username' => 'Username/password combination does not exist.'));

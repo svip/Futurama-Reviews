@@ -1,7 +1,7 @@
 <?php
 
 if ( !defined('REVIEWS') )
-	header('Location: ../');
+	gfRedirect();
 
 class PageRegister extends Page {
 
@@ -77,27 +77,35 @@ class PageRegister extends Page {
 		
 		gfGetAuth()->performLogin($username, $password, true);
 		
-		header("Location: /");
+		gfRedirect();
 	}
 	
 	private function createForm($errors = array(), $data = array()) {
-		return '<form method="post">
+		return gfRawMsg('<form method="post">
 	<fieldset>
-		<legend>Register a new account'.$this->errorMsg($errors, 'system').'</legend>
-		<label for="username">Desired username:'.$this->errorMsg($errors, 'username').'</label>
-		<input type="text" name="username" id="username"'.$this->valueData($data, 'username').' />
-		<label for="password1">Desired password:'.$this->errorMsg($errors, 'password1').'</label>
+		<legend>Register a new account$1</legend>
+		<label for="username">Desired username:$2</label>
+		<input type="text" name="username" id="username"$3 />
+		<label for="password1">Desired password:$4</label>
 		<input type="password" name="password1" id="password1" />
-		<label for="password2">Retype password:'.$this->errorMsg($errors, 'password2').'</label>
+		<label for="password2">Retype password:$5</label>
 		<input type="password" name="password2" id="password2" /><!--
-		<label for="email">E-mail:'.$this->errorMsg($errors, 'email').'</label>
+		<label for="email">E-mail:$6</label>
 		<input type="text" name="email" id="email" />-->
-		<label for="captcha">Write \'ye\' in the following input field to verify your humanity:'.$this->errorMsg($errors, 'captcha').'</label>
-		<input type="text" name="captcha" id="captcha"'.$this->valueData($data, 'captcha').' />
+		<label for="captcha">Write \'ye\' in the following input field to verify your humanity:$7</label>
+		<input type="text" name="captcha" id="captcha"$8 />
 		<input type="submit" name="submit-register" value="Register" />
 	</fieldset>
-</form>';
-		
+</form>',
+			$this->errorMsg($errors, 'system'),
+			$this->errorMsg($errors, 'username'),
+				$this->valueData($data, 'username'),
+			$this->errorMsg($errors, 'password1'),
+			$this->errorMsg($errors, 'password2'),
+			$this->errorMsg($errors, 'email'),
+			$this->errorMsg($errors, 'captcha'),
+			$this->valueData($data, 'captcha')
+		);
 	}
 	
 }
